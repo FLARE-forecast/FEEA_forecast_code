@@ -1,0 +1,61 @@
+##########################
+# Lake information
+###########################
+
+lake_name_code: feea
+lake_name: Feeagh Lake
+lake_latitude: 53.9   #Degrees North
+lake_longitude: -9.5  #Degrees East
+
+#Time zone that GLM is run in
+#Currently needed to be GMT so that it interfaces with the NOAA forecast
+#reference_tzone <<- "GMT"
+#Local time zone of the lake
+local_tzone: "UTC"
+
+noaa_location: feea
+
+met_raw_obs_fname: .na
+
+#specified_metfile: .na #NA #paste0(manual_data_location, "/met_full_postQAQC.csv")
+
+downscaling_coeff: .na
+
+nldas: .na
+
+#########################
+### Depth information
+#########################
+#Depths used in the EnKF
+#This are the depths that are saved between days
+#Init depth of lake
+lake_depth_init: 46.8  #not a modeled state
+
+depths_bins_top: [0.1, 0.5, 1.0,
+                    1.5, 2.0, 3.0,
+                    3.5, 4.0, 4.5,
+                    5.0, 5.5, 6.0,
+                    6.5, 7.0, 7.5,
+                    8.0, 8.5, 9.0,
+                    9.5, 10.0, 15.0,
+                    20.0, 25.0, 30.0,
+                    35.0, 40.0, 45.0]
+
+realtime_temp_location: data
+realtime_met_station_location: data
+
+insitu_obs_fname: .na
+
+variable_obsevation_depths: FALSE
+
+focal_depths: .na
+
+pull_from_git: FALSE
+
+target_variables:
+    - temperature
+
+averaging_period:
+    - "1 hour"
+
+averaging_period_starting_hour: "00:00:00"

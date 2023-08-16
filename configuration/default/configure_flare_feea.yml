@@ -1,0 +1,87 @@
+s3:
+  drivers:
+    endpoint: s3.flare-forecast.org
+    bucket: drivers/noaa/gefs-v12-reprocess
+  inflow_drivers:
+    endpoint: s3.flare-forecast.org
+    bucket: drivers/inflow/feea/parquet
+  targets:
+    endpoint: s3.flare-forecast.org
+    bucket: targets/feea
+  forecasts:
+    endpoint: s3.flare-forecast.org
+    bucket: forecasts
+  forecasts_parquet:
+    endpoint: s3.flare-forecast.org
+    bucket: forecasts/parquet
+  warm_start:
+    endpoint: s3.flare-forecast.org
+    bucket: restart/feea
+  scores:
+    endpoint: s3.flare-forecast.org
+    bucket: scores/parquet
+    
+location:
+   site_id: feea
+   name: Feeagh Lake
+   latitude: 53.9  #Degrees North
+   longitude: -9.5  #Degrees East
+da_setup:
+    da_method: enkf
+    par_fit_method: perturb_const
+    ensemble_size:  248
+    localization_distance: .na #distance in meters were covariances in the model error are used
+    no_negative_states: TRUE
+    assimilate_first_step: FALSE
+    use_obs_constraint: TRUE
+    obs_filename: feea-targets-insitu.csv
+model_settings:
+   ncore: 4
+   model_name: glm
+   base_GLM_nml: glm3_feea.nml
+   modeled_depths: [0.1, 0.5, 1.0,
+                    1.5, 2.0, 3.0,
+                    3.5, 4.0, 4.5,
+                    5.0, 5.5, 6.0,
+                    6.5, 7.0, 7.5,
+                    8.0, 8.5, 9.0,
+                    9.5, 10.0, 15.0,
+                    20.0, 25.0, 30.0,
+                    35.0, 40.0, 45.0]
+   par_config_file: parameter_calibration_config_feea.csv
+   obs_config_file: observations_config_feea.csv
+   states_config_file: states_config_feea.csv
+   depth_model_sd_config_file: depth_model_sd_feea.csv
+default_init:
+   lake_depth: 46.8
+   temp: [6.4, 6.4, 6.4, 6.4, 6.4, 6.4, 6.4, 6.5, 6.5, 6.5, 6.3, 6.4]
+   temp_depths: [2, 5, 8, 11, 14, 16, 18, 20, 22, 27, 32, 42]
+   salinity: 0.0
+   snow_thickness: 0.0
+   white_ice_thickness: 0.0
+   blue_ice_thickness: 0.0
+inflow:
+   include_inflow: FALSE
+   use_forecasted_inflow: FALSE
+   forecast_inflow_model: NA
+   observed_filename: NA
+   local_directory: NA
+   use_ler_vars: FALSE
+met:
+   use_forecasted_met: TRUE
+   use_observed_met: FALSE
+   local_directory: .na
+   observed_met_filename: .na
+   use_ler_vars: FALSE
+   forecast_lag_days: 1
+uncertainty:
+   observation: TRUE
+   process: TRUE
+   weather: TRUE
+   initial_condition: TRUE
+   parameter: TRUE
+   inflow_process: TRUE
+output_settings:
+   diagnostics_names:  [extc]
+   evaluate_past: TRUE
+   variables_in_scores: [state, parameter]
