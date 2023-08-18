@@ -6,4 +6,4 @@ forecast_horizon: 34.0
 sim_name: feea_test
 configure_flare: configure_flare_feea.yml
 configure_obs: observation_processing_feea.yml
-use_s3: false
+use_s3: TRUE
