@@ -20,7 +20,7 @@
    coef_mix_shear = 0.3
    coef_mix_turb = 0.51
    coef_mix_KH = 0.3
-   coef_mix_hyp = 1.9682
+   coef_mix_hyp = 0.5
    deep_mixing = 2
 /
 &morphometry
@@ -89,21 +89,21 @@
    num_outlet = 0
 /
 &snowice
-   snow_albedo_factor = 0.8
+   snow_albedo_factor = 1
    snow_rho_max = 300
    snow_rho_min = 50
    min_ice_thickness = 0.001
    dt_iceon_avg = 0.01
-   avg_surf_temp_thres = 0.5
+   avg_surf_temp_thres = 0.0
 /
 &sediment
    benthic_mode = 2
    sed_heat_model = 1
    n_zones = 2
-   zone_heights = 10, 47
-   sed_heat_Ksoil = 1.2, 1.2
-   sed_temp_depth = 1, 0.5
-   sed_temp_mean = 10,15
+   zone_heights = 15, 47
+   sed_heat_Ksoil = 0.7, 0.7
+   sed_temp_depth = 0.5, 0.25
+   sed_temp_mean = 9.4,10.8
    sed_temp_amplitude = 0,0
-   sed_temp_peak_doy = 227,227
+   sed_temp_peak_doy = 212,212
 /
