@@ -5,8 +5,8 @@ on:
 
 jobs:
   build:
-    #runs-on: ubuntu-latest
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
+    #runs-on: self-hosted
     container:
       image: rqthomas/flare-rocker:4.2.1
      #options: -v /c/Users/DKITStaff/Run_Flare_Feeah:/home/rstudio  # Corrected volume specification
