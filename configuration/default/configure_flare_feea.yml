@@ -39,23 +39,26 @@ model_settings:
    ncore: 4
    model_name: glm
    base_GLM_nml: glm3_feea.nml
-   modeled_depths: [0.1, 0.5, 1.0,
-                    1.5, 2.0, 3.0,
-                    3.5, 4.0, 4.5,
-                    5.0, 5.5, 6.0,
-                    6.5, 7.0, 7.5,
-                    8.0, 8.5, 9.0,
-                    9.5, 10.0, 15.0,
-                    20.0, 25.0, 30.0,
-                    35.0, 40.0, 45.0]
+   modeled_depths: [0.0, 0.5, 0.9,
+                    1.0, 1.5, 2.0, 
+                    3.0, 3.5, 4.0, 
+                    4.5, 5.0, 5.5, 
+                    6.0, 6.5, 7.0, 
+                    7.5, 8.0, 8.5, 
+                    9.0, 9.5, 10.0,
+                    11.0, 14.0, 15.0,
+                    16.0, 18.0, 20.0,
+                    22.0, 25.0, 27.0, 
+                    30.0, 32.0, 35.0, 
+                    40.0, 42.0, 45.0]
    par_config_file: parameter_calibration_config_feea.csv
    obs_config_file: observations_config_feea.csv
    states_config_file: states_config_feea.csv
    depth_model_sd_config_file: depth_model_sd_feea.csv
 default_init:
    lake_depth: 46.8
-   temp: [6.4, 6.4, 6.4, 6.4, 6.4, 6.4, 6.4, 6.5, 6.5, 6.5, 6.3, 6.4]
-   temp_depths: [2, 5, 8, 11, 14, 16, 18, 20, 22, 27, 32, 42]
+   temp: [11.6, 11.2, 11.0, 10.9, 10.7, 10.5, 10.4, 10.2, 10.1, 9.9, 9.7, 9.5, 9.3]
+   temp_depths: [0.9, 2, 5, 8, 11, 14, 16, 18, 20, 22, 27, 32, 42]
    salinity: 0.0
    snow_thickness: 0.0
    white_ice_thickness: 0.0
