@@ -86,5 +86,5 @@ uncertainty:
    inflow_process: TRUE
 output_settings:
    diagnostics_names:  [extc]
-   evaluate_past: TRUE
+   evaluate_past: FALSE
    variables_in_scores: [state, parameter]
