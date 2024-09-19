@@ -21,3 +21,9 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run:  Rscript $GITHUB_WORKSPACE/workflows/default/forecast_workflow.R
+
+      - name: Healthcheck
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y curl
+          curl -m 10 --retry 5 https://hc-ping.com/3c3755e3-a580-424d-8973-3b30ce4d64ff
