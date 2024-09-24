@@ -1,14 +1,16 @@
 library(tidyverse)
 library(lubridate)
 
-#remotes::install_github('flare-forecast/FLAREr@single-parameter')
+remotes::install_github('flare-forecast/FLAREr@single-parameter')
+remotes::install_github("rqthomas/GLM3r")
 remotes::install_github("cboettig/aws.s3")
 Sys.setenv('GLM_PATH'='GLM3r')
 
 lake_directory <- here::here()
 setwd(lake_directory)
-forecast_site <- "ccre"
-configure_run_file <- "configure_run.yml"
+forecast_site <- "feea"
+#configure_run_file <- paste0("configure_run.yaml")
+configure_run_file <- paste0("configure_run_",forecast_site,".yaml")
 config_set_name <- "glm_flare_v3"
 
 #' Source the R files in the repository
@@ -18,15 +20,9 @@ Sys.setenv("AWS_DEFAULT_REGION" = "renc",
            "AWS_S3_ENDPOINT" = "osn.xsede.org",
            "USE_HTTPS" = TRUE)
 
-configure_run_file <- paste0("configure_run_",forecast_site,".yml")
-config_set_name <- "default"
+config_obs <- yaml::read_yaml(file.path(lake_directory,'configuration',config_set_name,'observation_processing_feea.yaml'))
 
-config <- FLAREr::set_configuration(configure_run_file,lake_directory, config_set_name = config_set_name)
-
-# Generate the targets
-config_obs <- FLAREr::initialize_obs_processing(lake_directory, 
-                                                observation_yml = paste0("observation_processing_",forecast_site,".yml"), 
-                                                config_set_name = config_set_name)
+config <- FLAREr:::set_up_simulation(configure_run_file,lake_directory, config_set_name = config_set_name)
 
 dir.create(file.path(lake_directory, "targets", config$location$site_id), showWarnings = FALSE)
 
@@ -58,7 +54,7 @@ readr::read_csv(cleaned_insitu_file, show_col_types = FALSE) |>
 
 message("Successfully generated targets")
 
-FLAREr::put_targets(site_id =  config$location$site_id,
+FLAREr:::put_targets(site_id =  config$location$site_id,
                     cleaned_insitu_file = cleaned_insitu_file,
                     cleaned_met_file = NA,
                     cleaned_inflow_file = NA,
@@ -72,18 +68,64 @@ if(config$run_config$use_s3){
 noaa_ready <- TRUE
 while(noaa_ready){
   
-  config <- FLAREr::set_configuration(configure_run_file,lake_directory, config_set_name = config_set_name)
+  config <- FLAREr:::set_up_simulation(configure_run_file,lake_directory, config_set_name = config_set_name)
   
   # Run FLARE
   output <- FLAREr::run_flare(lake_directory = lake_directory,
                               configure_run_file = configure_run_file,
                               config_set_name = config_set_name)
   
+  message("Scoring forecasts")
+  forecast_s3 <- arrow::s3_bucket(bucket = config$s3$forecasts_parquet$bucket, endpoint_override = config$s3$forecasts_parquet$endpoint, anonymous = TRUE)
+  forecast_df <- arrow::open_dataset(forecast_s3) |>
+    dplyr::mutate(reference_date = lubridate::as_date(reference_date)) |>
+    dplyr::filter(model_id == 'glm_flare_v3',
+                  site_id == forecast_site,
+                  reference_date == lubridate::as_datetime(config$run_config$forecast_start_datetime)) |>
+    dplyr::collect()
+  
+  #if(config$run_config$use_s3){
+  #past_days <- lubridate::as_date(forecast_df$reference_datetime[1]) - lubridate::days(config$run_config$forecast_horizon)
+  past_days <- lubridate::as_date(lubridate::as_date(config$run_config$forecast_start_datetime) - lubridate::days(config$run_config$forecast_horizon))
+  
+  #vars <- arrow_env_vars()
+  past_s3 <- arrow::s3_bucket(bucket = config$s3$forecasts_parquet$bucket, endpoint_override = config$s3$forecasts_parquet$endpoint, anonymous = TRUE)
+  past_forecasts <- arrow::open_dataset(past_s3) |>
+    dplyr::mutate(reference_date = lubridate::as_date(reference_date)) |>
+    dplyr::filter(model_id == 'glm_flare_v3',
+                  site_id == forecast_site,
+                  reference_date == past_days) |>
+    dplyr::collect()
+  #unset_arrow_vars(vars)
+  # }else{
+  #   past_forecasts <- NULL
+  # }
+  
+  combined_forecasts <- dplyr::bind_rows(forecast_df, past_forecasts)
+  
+  targets_df <- read_csv(file.path(config$file_path$qaqc_data_directory,paste0(config$location$site_id, "-targets-insitu.csv")),show_col_types = FALSE)
+  
+  #combined_forecasts <- arrow::open_dataset('./forecasts/parquet/site_id=ccre/model_id=glm_flare_v3/reference_date=2024-09-03/part-0.parquet') |> collect()
+  
+  
+  message('running scoring function')
+  scoring <- generate_forecast_score_arrow(targets_df = targets_df,
+                                           forecast_df = combined_forecasts, ## only works if dataframe returned from output
+                                           use_s3 = TRUE,
+                                           bucket = config$s3$scores$bucket,
+                                           endpoint = config$s3$scores$endpoint,
+                                           local_directory = './CCRE-forecast-code/scores/ccre',
+                                           variable_types = c("state","parameter"))
+  
+  
+  
   forecast_start_datetime <- lubridate::as_datetime(config$run_config$forecast_start_datetime) + lubridate::days(1)
   start_datetime <- lubridate::as_datetime(config$run_config$forecast_start_datetime) - lubridate::days(1)
-  restart_file <- paste0(config$location$site_id,"-", (lubridate::as_date(forecast_start_datetime)- days(1)), "-",config$run_config$sim_name ,".nc")
+  restart_file <- paste0(config$location$site_id,"-", (lubridate::as_date(forecast_start_datetime) - lubridate::days(1)), "-",config$run_config$sim_name ,".nc")
   
-  FLAREr::update_run_config2(lake_directory = lake_directory,
+  
+  message('updating run configuration')
+  FLAREr:::update_run_config(lake_directory = lake_directory,
                              configure_run_file = configure_run_file, 
                              restart_file = restart_file, 
                              start_datetime = start_datetime, 
@@ -95,13 +137,13 @@ while(noaa_ready){
                              configure_flare = config$run_config$configure_flare, 
                              configure_obs = config$run_config$configure_obs, 
                              use_s3 = config$run_config$use_s3,
-                             bucket = config$s3$warm_start$bucket,
-                             endpoint = config$s3$warm_start$endpoint,
+                             bucket = config$s3$restart$bucket,
+                             endpoint = config$s3$restart$endpoint,
                              use_https = TRUE)
   
-  #RCurl::url.exists("https://hc-ping.com/551392ce-43f3-49b1-8a57-6a60bad1c377", timeout = 5)
+  #RCurl::url.exists("https://hc-ping.com/3c3755e3-a580-424d-8973-3b30ce4d64ff", timeout = 5)
   
-  noaa_ready <- FLAREr::check_noaa_present_arrow(lake_directory,
+  noaa_ready <- FLAREr::check_noaa_present(lake_directory,
                                                  configure_run_file,
                                                  config_set_name = config_set_name)
 }

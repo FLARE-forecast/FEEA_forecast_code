@@ -1,0 +1,96 @@
+s3:
+  drivers:
+    endpoint: renc.osn.xsede.org
+    bucket: bio230121-bucket01/flare/drivers/met
+  inflow_drivers:
+    endpoint: renc.osn.xsede.org
+    bucket: bio230121-bucket01/flare/drivers/inflow/feea/lm_ar
+  outflow_drivers:
+    endpoint: renc.osn.xsede.org
+    bucket: bio230121-bucket01/flare/drivers/inflow/feea/lm_ar
+  targets:
+    endpoint: renc.osn.xsede.org
+    bucket: bio230121-bucket01/flare/targets/ccre
+  forecasts:
+    endpoint: renc.osn.xsede.org
+    bucket: bio230121-bucket01/flare/forecasts/netcdf
+  forecasts_parquet:
+    endpoint: renc.osn.xsede.org
+    bucket: bio230121-bucket01/flare/forecasts/parquet
+  restart:
+    endpoint: renc.osn.xsede.org
+    bucket: bio230121-bucket01/flare/restart
+  scores:
+    endpoint: renc.osn.xsede.org
+    bucket: bio230121-bucket01/flare/scores/parquet
+location:
+   site_id: feea
+   name: Feeagh Lake
+   latitude: 53.9  #Degrees North
+   longitude: -9.5  #Degrees East
+da_setup:
+    da_method: enkf
+    par_fit_method: perturb_const
+    ensemble_size:  248
+    localization_distance: .na #distance in meters were covariances in the model error are used
+    no_negative_states: TRUE
+    assimilate_first_step: FALSE
+    use_obs_constraint: TRUE
+    obs_filename: feea-targets-insitu.csv
+model_settings:
+   ncore: 4
+   model_name: glm
+   base_GLM_nml: glm3_feea.nml
+   modeled_depths: [0.0,0.9,2.0,5.0,8.0,
+                    11.0,14.0,16.0,18.0, 
+                    20.0,22.0,27.0,32.0,42.0]
+   max_model_layers: 100
+   par_config_file: parameter_calibration_config_feea.csv
+   obs_config_file: observations_config_feea.csv
+   states_config_file: states_config_feea.csv
+   depth_model_sd_config_file: depth_model_sd_feea.csv
+default_init:
+   lake_depth: 46.8
+   temp: [11.6, 11.2, 11.0, 10.9, 10.7, 10.5, 10.4, 10.2, 10.1, 9.9, 9.7, 9.5, 9.3]
+   temp_depths: [0.9, 2, 5, 8, 11, 14, 16, 18, 20, 22, 27, 32, 42]
+   salinity: 0.0
+   snow_thickness: 0.0
+   white_ice_thickness: 0.0
+   blue_ice_thickness: 0.0
+flows:
+   include_inflow: FALSE
+   include_outflow: FALSE
+   use_forecasted_inflow: FALSE
+   forecast_inflow_model: NA
+   observed_inflow_filename: NA
+   inflow_variables: NA
+   use_ler_vars: FALSE
+   historical_inflow_model: NA
+   future_inflow_model: NA
+   historical_outflow_model: NA
+   future_outflow_model: NA
+   local_inflow_directory: NA
+   local_outflow_directory: NA
+   use_flows_s3: NA
+met:
+   future_met_model: 'gefs-v12/stage2'
+   historical_met_model: 'gefs-v12/stage3'
+   historical_met_use_s3: TRUE
+   future_met_use_s3: TRUE
+   use_openmeteo: FALSE
+   local_met_directory: 'drivers'
+   use_forecasted_met: TRUE
+   use_ler_vars: FALSE
+   forecast_lag_days: 1
+uncertainty:
+   observation: TRUE
+   process: TRUE
+   weather: TRUE
+   initial_condition: TRUE
+   parameter: TRUE
+   inflow: TRUE
+output_settings:
+   diagnostics_names:  [extc]
+   evaluate_past: FALSE
+   variables_in_scores: [state, parameter]
+   generate_plots: TRUE
