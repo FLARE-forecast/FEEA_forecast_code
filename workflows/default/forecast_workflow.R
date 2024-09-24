@@ -2,14 +2,14 @@ library(tidyverse)
 library(lubridate)
 
 #remotes::install_github('flare-forecast/FLAREr@single-parameter')
-remotes::install_github("cboettig/aws.s3")
-Sys.setenv('GLM_PATH'='GLM3r')
+#remotes::install_github("cboettig/aws.s3")
+#Sys.setenv('GLM_PATH'='GLM3r')
 
 lake_directory <- here::here()
 setwd(lake_directory)
-forecast_site <- "ccre"
+forecast_site <- "feea"
 configure_run_file <- "configure_run.yml"
-config_set_name <- "glm_flare_v3"
+config_set_name <- "default"
 
 #' Source the R files in the repository
 walk(list.files(file.path(lake_directory, "R"), full.names = TRUE), source)
