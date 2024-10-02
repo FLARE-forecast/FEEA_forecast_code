@@ -31,7 +31,7 @@ config_obs <- FLAREr::initialize_obs_processing(lake_directory,
 dir.create(file.path(lake_directory, "targets", config$location$site_id), showWarnings = FALSE)
 
 cleaned_insitu_file <- read_csv("https://raw.githubusercontent.com/RicardoDkIT/observations_feea/main/Observations_feea.csv")
-
+cleaned_insitu_file <- cleaned_insitu_file |> dplyr::filter(median >= 0)
 
 write_csv(cleaned_insitu_file,file.path(lake_directory,"targets", 
                                         config$location$site_id,
