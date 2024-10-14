@@ -1,7 +1,7 @@
 library(tidyverse)
 library(lubridate)
 
-remotes::install_github('flare-forecast/FLAREr@single-parameter')
+remotes::install_github('flare-forecast/FLAREr')
 remotes::install_github("rqthomas/GLM3r")
 remotes::install_github("cboettig/aws.s3")
 Sys.setenv('GLM_PATH'='GLM3r')
@@ -26,46 +26,54 @@ config <- FLAREr:::set_up_simulation(configure_run_file,lake_directory, config_s
 
 dir.create(file.path(lake_directory, "targets", config$location$site_id), showWarnings = FALSE)
 
-cleaned_insitu_file <- read_csv("https://raw.githubusercontent.com/RicardoDkIT/observations_feea/main/Observations_feea.csv")
+noaa_ready <- FLAREr::check_noaa_present(lake_directory,
+                                         configure_run_file = configure_run_file,
+                                         config_set_name = config_set_name)
 
-
-write_csv(cleaned_insitu_file,file.path(lake_directory,"targets", 
-                                        config$location$site_id,
-                                        paste0(config$location$site_id,"-targets-insitu.csv")))
-
-
-
-# Read in the targets
-cuts <- tibble::tibble(cuts = as.integer(factor(config$model_settings$modeled_depths)),
-                       depth = config$model_settings$modeled_depths)
-
-cleaned_insitu_file <- file.path(lake_directory, "targets", config$location$site_id, config$da_setup$obs_filename)
-readr::read_csv(cleaned_insitu_file, show_col_types = FALSE) |> 
-  dplyr::mutate(cuts = cut(depth, breaks = config$model_settings$modeled_depths, include.lowest = TRUE, right = FALSE, labels = FALSE)) |>
-  dplyr::filter(lubridate::hour(datetime) == 0) |>
-  dplyr::group_by(cuts, variable, datetime, site_id) |>
-  dplyr::summarize(observation = mean(observation, na.rm = TRUE), .groups = "drop") |>
-  dplyr::left_join(cuts, by = "cuts") |>
-  dplyr::select(site_id, datetime, variable, depth, observation) |>
-  dplyr::filter(observation >= 0) |> 
-  write_csv(cleaned_insitu_file)
-
-# Move targets to s3 bucket
-
-message("Successfully generated targets")
-
-FLAREr:::put_targets(site_id =  config$location$site_id,
-                    cleaned_insitu_file = cleaned_insitu_file,
-                    cleaned_met_file = NA,
-                    cleaned_inflow_file = NA,
-                    use_s3 = config$run_config$use_s3,
-                    config = config)
-
-if(config$run_config$use_s3){
-  message("Successfully moved targets to s3 bucket")
+if(noaa_ready){
+  # Read in the targets
+  cleaned_insitu_file <- read_csv("https://raw.githubusercontent.com/RicardoDkIT/observations_feea/main/Observations_feea.csv")
+  
+  
+  write_csv(cleaned_insitu_file,file.path(lake_directory,"targets", 
+                                          config$location$site_id,
+                                          paste0(config$location$site_id,"-targets-insitu.csv")))
+  
+  
+  
+  # Read in the targets
+  cuts <- tibble::tibble(cuts = as.integer(factor(config$model_settings$modeled_depths)),
+                         depth = config$model_settings$modeled_depths)
+  
+  cleaned_insitu_file <- file.path(lake_directory, "targets", config$location$site_id, config$da_setup$obs_filename)
+  
+  readr::read_csv(cleaned_insitu_file, show_col_types = FALSE) |> 
+    dplyr::mutate(cuts = cut(depth, breaks = config$model_settings$modeled_depths, include.lowest = TRUE, right = FALSE, labels = FALSE)) |>
+    dplyr::filter(lubridate::hour(datetime) == 0) |>
+    dplyr::group_by(cuts, variable, datetime, site_id) |>
+    dplyr::summarize(observation = mean(observation, na.rm = TRUE), .groups = "drop") |>
+    dplyr::left_join(cuts, by = "cuts") |>
+    dplyr::select(site_id, datetime, variable, depth, observation) |>
+    #dplyr::filter(observation >= 0) |> 
+    write_csv(cleaned_insitu_file)
+  
+  # Move targets to s3 bucket
+  
+  message("Successfully generated targets")
+  
+  FLAREr:::put_targets(site_id =  config$location$site_id,
+                       cleaned_insitu_file = cleaned_insitu_file,
+                       cleaned_met_file = NA,
+                       cleaned_inflow_file = NA,
+                       use_s3 = config$run_config$use_s3,
+                       config = config)
+  
+  if(config$run_config$use_s3){
+    message("Successfully moved targets to s3 bucket")
+  }
+  
 }
 
-noaa_ready <- TRUE
 while(noaa_ready){
   
   config <- FLAREr:::set_up_simulation(configure_run_file,lake_directory, config_set_name = config_set_name)
@@ -114,7 +122,7 @@ while(noaa_ready){
                                            use_s3 = TRUE,
                                            bucket = config$s3$scores$bucket,
                                            endpoint = config$s3$scores$endpoint,
-                                           local_directory = './CCRE-forecast-code/scores/ccre',
+                                           local_directory = './FEEA_forecast_code/scores/feea',
                                            variable_types = c("state","parameter"))
   
   
