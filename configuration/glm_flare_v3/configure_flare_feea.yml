@@ -41,13 +41,10 @@ model_settings:
    ncore: 4
    model_name: glm
    base_GLM_nml: glm3_feea.nml
-   # modeled_depths: [0.0,0.9,2.0,5.0,8.0,
-   #                  11.0,14.0,16.0,18.0, 
-   #                  20.0,22.0,27.0,32.0,42.0]
-   modeled_depths: [0.9,2.0,5.0,8.0,
-                    11.0,14.0,16.0,18.0, 
+   modeled_depths: [0.0,0.9,2.0,5.0,8.0,
+                    11.0,14.0,16.0,18.0,
                     20.0,22.0,27.0,32.0,42.0]
-   max_model_layers: 100
+   max_model_layers: 250
    par_config_file: parameter_calibration_config_feea.csv
    obs_config_file: observations_config_feea.csv
    states_config_file: states_config_feea.csv
