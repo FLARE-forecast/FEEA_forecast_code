@@ -1,23 +1,28 @@
 s3:
   drivers:
     endpoint: renc.osn.xsede.org
-    bucket: bio230121-bucket01/flare/drivers/met/gefs-v12
+    bucket: bio230121-bucket01/flare/drivers/met
+  inflow_drivers:
+    endpoint: renc.osn.xsede.org
+    bucket: bio230121-bucket01/flare/drivers/inflow/feea/lm_ar
+  outflow_drivers:
+    endpoint: renc.osn.xsede.org
+    bucket: bio230121-bucket01/flare/drivers/inflow/feea/lm_ar
   targets:
     endpoint: renc.osn.xsede.org
-    bucket: bio230121-bucket01/flare/targets/ccre
+    bucket: bio230121-bucket01/flare/targets/feea
   forecasts:
     endpoint: renc.osn.xsede.org
     bucket: bio230121-bucket01/flare/forecasts/netcdf
   forecasts_parquet:
     endpoint: renc.osn.xsede.org
     bucket: bio230121-bucket01/flare/forecasts/parquet
-  warm_start:
+  restart:
     endpoint: renc.osn.xsede.org
     bucket: bio230121-bucket01/flare/restart
   scores:
     endpoint: renc.osn.xsede.org
     bucket: bio230121-bucket01/flare/scores/parquet
-    
 location:
    site_id: feea
    name: Feeagh Lake
@@ -36,18 +41,10 @@ model_settings:
    ncore: 4
    model_name: glm
    base_GLM_nml: glm3_feea.nml
-   modeled_depths: [0.0, 0.5, 0.9,
-                    1.0, 1.5, 2.0, 
-                    3.0, 3.5, 4.0, 
-                    4.5, 5.0, 5.5, 
-                    6.0, 6.5, 7.0, 
-                    7.5, 8.0, 8.5, 
-                    9.0, 9.5, 10.0,
-                    11.0, 14.0, 15.0,
-                    16.0, 18.0, 20.0,
-                    22.0, 25.0, 27.0, 
-                    30.0, 32.0, 35.0, 
-                    40.0, 42.0, 45.0]
+   modeled_depths: [0.0,0.9,2.0,5.0,8.0,
+                    11.0,14.0,16.0,18.0,
+                    20.0,22.0,27.0,32.0,42.0]
+   max_model_layers: 250
    par_config_file: parameter_calibration_config_feea.csv
    obs_config_file: observations_config_feea.csv
    states_config_file: states_config_feea.csv
@@ -60,18 +57,29 @@ default_init:
    snow_thickness: 0.0
    white_ice_thickness: 0.0
    blue_ice_thickness: 0.0
-inflow:
+flows:
    include_inflow: FALSE
+   include_outflow: FALSE
    use_forecasted_inflow: FALSE
    forecast_inflow_model: NA
-   observed_filename: NA
-   local_directory: NA
+   observed_inflow_filename: NA
+   inflow_variables: NA
    use_ler_vars: FALSE
+   historical_inflow_model: NA
+   future_inflow_model: NA
+   historical_outflow_model: NA
+   future_outflow_model: NA
+   local_inflow_directory: NA
+   local_outflow_directory: NA
+   use_flows_s3: NA
 met:
+   future_met_model: 'gefs-v12/stage2/reference_datetime={reference_date}/site_id={site_id}'
+   historical_met_model: 'gefs-v12/stage3/site_id={site_id}'
+   historical_met_use_s3: TRUE
+   future_met_use_s3: TRUE
+   use_openmeteo: FALSE
+   local_met_directory: 'drivers'
    use_forecasted_met: TRUE
-   use_observed_met: FALSE
-   local_directory: .na
-   observed_met_filename: .na
    use_ler_vars: FALSE
    forecast_lag_days: 1
 uncertainty:
@@ -80,8 +88,9 @@ uncertainty:
    weather: TRUE
    initial_condition: TRUE
    parameter: TRUE
-   inflow_process: TRUE
+   inflow: TRUE
 output_settings:
    diagnostics_names:  [extc]
    evaluate_past: FALSE
    variables_in_scores: [state, parameter]
+   generate_plots: TRUE

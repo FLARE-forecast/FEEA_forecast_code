@@ -1,44 +1,20 @@
+library(lineprof)
+
 library(tidyverse)
 library(lubridate)
-
-#remotes::install_github('flare-forecast/FLAREr@single-parameter')
-#remotes::install_github("cboettig/aws.s3")
-#Sys.setenv('GLM_PATH'='GLM3r')
-
 lake_directory <- here::here()
 setwd(lake_directory)
-forecast_site <- "feea"
-configure_run_file <- "configure_run.yml"
-config_set_name <- "default"
+forecast_site <- c("feea")
 
-#' Source the R files in the repository
-walk(list.files(file.path(lake_directory, "R"), full.names = TRUE), source)
 
-Sys.setenv("AWS_DEFAULT_REGION" = "renc",
-           "AWS_S3_ENDPOINT" = "osn.xsede.org",
-           "USE_HTTPS" = TRUE)
-
+flare_test <- function(){
 configure_run_file <- paste0("configure_run_",forecast_site,".yml")
 config_set_name <- "default"
 
 config <- FLAREr::set_configuration(configure_run_file,lake_directory, config_set_name = config_set_name)
 
 # Generate the targets
-config_obs <- FLAREr::initialize_obs_processing(lake_directory, 
-                                                observation_yml = paste0("observation_processing_",forecast_site,".yml"), 
-                                                config_set_name = config_set_name)
-
-dir.create(file.path(lake_directory, "targets", config$location$site_id), showWarnings = FALSE)
-
-cleaned_insitu_file <- read_csv("https://raw.githubusercontent.com/RicardoDkIT/observations_feea/main/Observations_feea.csv")
-cleaned_insitu_file <- cleaned_insitu_file |> dplyr::filter(median >= 0)
-
-write_csv(cleaned_insitu_file,file.path(lake_directory,"targets", 
-                                        config$location$site_id,
-                                        paste0(config$location$site_id,"-targets-insitu.csv")))
-
-
-
+source('workflows/default/generate_targets.R')
 # Read in the targets
 cuts <- tibble::tibble(cuts = as.integer(factor(config$model_settings$modeled_depths)),
                        depth = config$model_settings$modeled_depths)
@@ -51,7 +27,6 @@ readr::read_csv(cleaned_insitu_file, show_col_types = FALSE) |>
   dplyr::summarize(observation = mean(observation, na.rm = TRUE), .groups = "drop") |>
   dplyr::left_join(cuts, by = "cuts") |>
   dplyr::select(site_id, datetime, variable, depth, observation) |>
-  dplyr::filter(observation >= 0) |> 
   write_csv(cleaned_insitu_file)
 
 # Move targets to s3 bucket
@@ -105,3 +80,7 @@ while(noaa_ready){
                                                  configure_run_file,
                                                  config_set_name = config_set_name)
 }
+}
+
+
+a <- lineprof(flare_test())
