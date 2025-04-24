@@ -1,24 +1,24 @@
 s3:
   drivers:
-    endpoint: renc.osn.xsede.org
+    endpoint: amnh1.osn.mghpcc.org
     bucket: bio230121-bucket01/flare/drivers/met
   inflow_drivers:
-    endpoint: renc.osn.xsede.org
+    endpoint: amnh1.osn.mghpcc.org
     bucket: bio230121-bucket01/flare/drivers/inflow/feea/lm_ar
   outflow_drivers:
-    endpoint: renc.osn.xsede.org
+    endpoint: amnh1.osn.mghpcc.org
     bucket: bio230121-bucket01/flare/drivers/inflow/feea/lm_ar
   targets:
-    endpoint: renc.osn.xsede.org
+    endpoint: amnh1.osn.mghpcc.org
     bucket: bio230121-bucket01/flare/targets/feea
   forecasts:
-    endpoint: renc.osn.xsede.org
+    endpoint: amnh1.osn.mghpcc.org
     bucket: bio230121-bucket01/flare/forecasts/netcdf
   forecasts_parquet:
-    endpoint: renc.osn.xsede.org
+    endpoint: amnh1.osn.mghpcc.org
     bucket: bio230121-bucket01/flare/forecasts/parquet
   restart:
-    endpoint: renc.osn.xsede.org
+    endpoint: amnh1.osn.mghpcc.org
     bucket: bio230121-bucket01/flare/restart
   scores:
     endpoint: renc.osn.xsede.org
