@@ -21,7 +21,7 @@ s3:
     endpoint: amnh1.osn.mghpcc.org
     bucket: bio230121-bucket01/flare/restart
   scores:
-    endpoint: renc.osn.xsede.org
+    endpoint: amnh1.osn.mghpcc.org
     bucket: bio230121-bucket01/flare/scores/parquet
 location:
    site_id: feea
